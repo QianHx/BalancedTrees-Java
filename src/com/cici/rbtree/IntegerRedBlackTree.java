@@ -1,9 +1,5 @@
 package com.cici.rbtree;
 
-import static org.hamcrest.CoreMatchers.nullValue;
-
-import java.util.ArrayList;
-
 public class IntegerRedBlackTree {
 	public static IntegerRedBlackTreeNode nil = new IntegerRedBlackTreeNode();
 	
@@ -152,7 +148,9 @@ public class IntegerRedBlackTree {
 	}
 	
 	public IntegerRedBlackTreeNode remove(Integer key) {
-		
+		if (!this.contains(key)) {
+			return null;
+		}
 		return this.remove(this.search(key));
 	}
 
@@ -161,7 +159,137 @@ public class IntegerRedBlackTree {
 			return null;
 		}
 		
+		IntegerRedBlackTreeNode nodeToRemove;
+		if (node.getLeft() != nil && node.getRight() != nil) {
+			// TODO: find the biggest node in the left tree/ the smallest node in the right tree
+			
+		} else if (node.getLeft() == nil && node.getRight() == nil) {
+			
+		} else {
+			nodeToRemove = node;
+		}
+		this.delete_one_child(node);
+		
 		return null;
+	}
+	
+	void delete_one_child(IntegerRedBlackTreeNode node) {
+		IntegerRedBlackTreeNode parent = node.getParent();
+		IntegerRedBlackTreeNode child;
+		if (node.getLeft() != nil) {
+			child = node.getLeft();
+		} else {
+			child = node.getRight();
+		}
+		
+		// Node is root
+		if (parent == null) {
+			root = child;
+		} else {
+			// Substitute node and node's child
+			if (child != nil) child.setParent(parent);
+			if (node == parent.getLeft()) {
+				parent.setLeft(child);
+			} else {
+				parent.setRight(child);
+			}
+		}	
+		
+		// Balance the black height
+		if (node.getColor() == Color.Black) {
+			if (child.getColor() == Color.Red)
+				child.setColor(Color.Black);
+			else
+				delete_case1(child);
+		}
+	}
+	
+	void delete_case1(IntegerRedBlackTreeNode node) {
+		if (node.getParent() != null)
+			delete_case2(node);
+	}
+	
+	void delete_case2(IntegerRedBlackTreeNode node) {
+		IntegerRedBlackTreeNode parent = node.getParent();
+		IntegerRedBlackTreeNode brother;
+		if (node == parent.getLeft()) {
+			brother = parent.getRight();
+		} else {
+			brother = parent.getLeft();
+		}
+		
+		if (brother.getColor() == Color.Red) {
+			parent.setColor(Color.Red);
+			brother.setColor(Color.Black);
+			
+			if (node == parent.getLeft()) {
+				rotate_left(parent);
+			} else {
+				rotate_right(parent);
+			}
+		}
+		
+		delete_case3(node);
+	}
+	
+	void delete_case3(IntegerRedBlackTreeNode node) {
+		IntegerRedBlackTreeNode parent = node.getParent();
+		IntegerRedBlackTreeNode brother;
+		if (node == parent.getLeft()) {
+			brother = parent.getRight();
+		} else {
+			brother = parent.getLeft();
+		}
+		
+		if (parent.getColor() == Color.Black 
+				&& brother.getColor() == Color.Black 
+				&& brother.getLeft().getColor() == Color.Black 
+				&& brother.getRight().getColor() == Color.Black) {
+			brother.setColor(Color.Red);
+			delete_case1(parent);
+		} else if (parent.getColor() == Color.Red
+				&& brother.getColor() == Color.Black
+				&& brother.getLeft().getColor() == Color.Black
+				&& brother.getRight().getColor() == Color.Black) {
+			brother.setColor(Color.Red);
+			parent.setColor(Color.Black);
+		} else {
+			if (brother.getColor() == Color.Black) {
+				if (node == parent.getLeft() && brother.getLeft().getColor() == Color.Red
+						&& brother.getRight().getColor() == Color.Black) {
+					brother.setColor(Color.Red);
+					brother.getLeft().setColor(Color.Black);
+					rotate_right(brother);
+				} else if (node == parent.getRight() && brother.getLeft().getColor() == Color.Black
+						&& brother.getRight().getColor() == Color.Red) {
+					brother.setColor(Color.Red);
+					brother.getRight().setColor(Color.Black);
+					rotate_left(brother);
+				}
+			}
+			delete_case5(node);
+		}
+	}
+	
+	void delete_case5(IntegerRedBlackTreeNode node) {
+		IntegerRedBlackTreeNode parent = node.getParent();
+		IntegerRedBlackTreeNode brother;
+		if (node == parent.getLeft()) {
+			brother = parent.getRight();
+		} else {
+			brother = parent.getLeft();
+		}
+		
+		brother.setColor(parent.getColor());
+		parent.setColor(Color.Black);
+		
+		if (node == parent.getLeft()) {
+			brother.getRight().setColor(Color.Black);
+			rotate_left(parent);
+		} else {
+			brother.getLeft().setColor(Color.Black);
+			rotate_right(parent);
+		}
 	}
 	
 	public IntegerRedBlackTreeNode search(Integer key) {
